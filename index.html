@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SGCL Vessel Agency — Hệ thống Quản lý Đại lý Tàu biển</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            sidebar: {
+              DEFAULT: '#0E2433',
+              hover: '#16354A',
+              active: '#0D7A6E',
+            },
+            tealbrand: {
+              600: '#0D7A6E',
+              500: '#109485',
+              100: '#E6F5F3',
+              50: '#F2FAF9',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #F4F6F9;
+      color: #1E293B;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #F1F5F9; }
+    ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+    @media print {
+      .no-print { display: none !important; }
+      body { background: #fff !important; }
+      #sofModal { position: static !important; background: #fff !important; padding: 0 !important; }
+      #sofModal > div { box-shadow: none !important; border: none !important; max-height: none !important; max-width: 100% !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex bg-[#F4F6F9] text-slate-800">
+
+  <!-- MOBILE SIDEBAR BACKDROP -->
+  <div id="sidebarBackdrop" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-slate-900/50 z-30 hidden lg:hidden"></div>
+
+  <!-- LEFT DARK NAVY SIDEBAR -->
+  <aside id="appSidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-64 bg-[#0E2433] text-slate-200 flex flex-col shrink-0 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out no-print">
+    <!-- Brand Logo -->
+    <div class="px-5 py-5 flex items-center justify-between border-b border-slate-700/50">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-[#129490] text-white font-extrabold text-lg flex items-center justify-center shadow-sm">
+          S
+        </div>
+        <div>
+          <div class="font-extrabold text-white tracking-wide text-base leading-tight">SGCL</div>
+          <div class="text-[10px] font-semibold tracking-widest text-slate-400 uppercase">VESSEL AGENCY</div>
+        </div>
+      </div>
+      <button onclick="toggleMobileSidebar()" class="lg:hidden text-slate-400 hover:text-white" aria-label="Đóng menu">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+
+    <!-- Navigation Menu -->
+    <div class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+      <div class="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+        NGHIỆP VỤ ĐẠI LÝ
+      </div>
+
+      <button onclick="switchModule('overview')" id="nav-overview" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition">
+        <span class="flex items-center gap-3"><i class="fa-solid fa-table-cells-large w-4 text-center"></i>Tổng quan</span>
+      </button>
+
+      <button onclick="switchModule('vessels')" id="nav-vessels" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition">
+        <span class="flex items-center gap-3"><i class="fa-solid fa-anchor w-4 text-center"></i>Quản lý tàu</span>
+        <span id="badge-vessels" class="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-slate-700 text-slate-200">1</span>
+      </button>
+
+      <button onclick="switchModule('checklist')" id="nav-checklist" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition">
+        <span class="flex items-center gap-3"><i class="fa-regular fa-square-check w-4 text-center"></i>Checklist CP1–CP3</span>
+      </button>
+
+      <button onclick="switchModule('fieldlog')" id="nav-fieldlog" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition">
+        <span class="flex items-center gap-3"><i class="fa-regular fa-clock w-4 text-center"></i>Nhật ký hiện trường</span>
+        <span id="badge-shifts" class="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-slate-700 text-slate-200">2</span>
+      </button>
+
+      <button onclick="switchModule('dailyreport')" id="nav-dailyreport" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition">
+        <span class="flex items-center gap-3"><i class="fa-solid fa-pen-nib w-4 text-center"></i>Daily report</span>
+        <span id="badge-stoppages" class="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-slate-700 text-slate-200">1</span>
+      </button>
+
+      <button onclick="switchModule('reconcile')" id="nav-reconcile" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition">
+        <span class="flex items-center gap-3"><i class="fa-solid fa-scale-balanced w-4 text-center"></i>Đối chiếu số liệu</span>
+      </button>
+
+      <button onclick="switchModule('softimeline')" id="nav-softimeline" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition">
+        <span class="flex items-center gap-3"><i class="fa-solid fa-list-ul w-4 text-center"></i>Dòng thời gian SOF</span>
+        <span id="badge-sof" class="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-slate-700 text-slate-200">5</span>
+      </button>
+
+      <button onclick="switchModule('photos')" id="nav-photos" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition">
+        <span class="flex items-center gap-3"><i class="fa-regular fa-image w-4 text-center"></i>Hình ảnh hiện trường</span>
+        <span id="badge-photos" class="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-slate-700 text-slate-200">1</span>
+      </button>
+
+      <button onclick="switchModule('docs')" id="nav-docs" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition">
+        <span class="flex items-center gap-3"><i class="fa-regular fa-file-lines w-4 text-center"></i>Báo cáo &amp; chứng từ</span>
+        <span id="badge-missing-docs" class="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-slate-700 text-slate-200">4</span>
+      </button>
+
+      <button onclick="switchModule('handover')" id="nav-handover" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition">
+        <span class="flex items-center gap-3"><i class="fa-solid fa-right-left w-4 text-center"></i>Bàn giao ca trực</span>
+        <span id="badge-handover" class="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-slate-700 text-slate-200">1</span>
+      </button>
+    </div>
+
+    <!-- Bottom Backup/Restore & Officer Card -->
+    <div class="p-3.5 border-t border-slate-700/60 space-y-3 bg-[#0B1D29]">
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="backupDataJson()" class="px-2.5 py-1.5 rounded-lg bg-[#16354A] hover:bg-[#1E4661] text-slate-200 text-[11px] font-semibold flex items-center justify-center gap-1.5 transition">
+          <i class="fa-solid fa-arrow-down"></i> Sao lưu
+        </button>
+        <button onclick="triggerRestoreJson()" class="px-2.5 py-1.5 rounded-lg bg-[#16354A] hover:bg-[#1E4661] text-slate-200 text-[11px] font-semibold flex items-center justify-center gap-1.5 transition">
+          <i class="fa-solid fa-arrow-up"></i> Khôi phục
+        </button>
+        <input type="file" id="restoreJsonInput" accept="application/json" class="hidden" onchange="handleRestoreJsonFile(event)" />
+      </div>
+
+      <div>
+        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">SAIGON CUULONG JSC</div>
+        <div class="p-2.5 rounded-xl bg-[#132E40] border border-slate-700/60">
+          <div class="text-[10px] text-slate-400">Thực hiện &amp; Phụ trách:</div>
+          <div class="text-xs font-bold text-white mt-0.5">Trương Nguyễn Bảo Ngọc</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT SHELL -->
+  <div class="flex-1 flex flex-col min-w-0">
+    <!-- TOP BAR -->
+    <header class="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 sticky top-0 z-20 no-print">
+      <div class="flex items-center gap-2.5">
+        <button onclick="toggleMobileSidebar()" class="lg:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100" aria-label="Mở menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="flex items-center gap-2 text-xs sm:text-sm">
+          <span class="text-slate-400 font-medium">SGCL</span>
+          <span class="text-slate-300">/</span>
+          <span id="breadcrumbCurrent" class="font-bold text-slate-800">Quản lý tàu</span>
+        </div>
+        <span class="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Trực tuyến
+        </span>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <!-- Active Vessel Switcher -->
+        <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1">
+          <i class="fa-solid fa-ship text-[#0D7A6E] text-xs"></i>
+          <select id="headerVesselSelect" onchange="selectVessel(this.value)" class="bg-transparent text-xs font-bold text-slate-800 focus:outline-none max-w-[175px] sm:max-w-[220px] truncate cursor-pointer">
+          </select>
+        </div>
+
+        <button onclick="openNewVesselModal()" class="px-3 py-1.5 rounded-lg bg-[#0D7A6E] hover:bg-[#0B665C] text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-sm">
+          <i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">Thêm chuyến tàu</span>
+        </button>
+
+        <button onclick="openSofModal()" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition">
+          <i class="fa-regular fa-file-lines"></i> <span class="hidden md:inline">Xuất SOF</span>
+        </button>
+        <button onclick="exportCsvData()" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-download"></i> <span class="hidden md:inline">CSV</span>
+        </button>
+        <div class="h-6 w-px bg-slate-200 hidden xl:block"></div>
+        <div class="hidden xl:flex items-center gap-2.5 pl-1">
+          <div class="w-8 h-8 rounded-full bg-tealbrand-100 text-tealbrand-600 font-bold text-xs flex items-center justify-center border border-tealbrand-600/20">
+            BN
+          </div>
+          <div class="leading-tight">
+            <div class="text-xs font-bold text-slate-800">Trương Nguyễn Bảo Ngọc</div>
+            <div class="text-[10px] text-slate-500">Agency Operations Lead</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toastArea" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- EMPTY STATE WHEN ALL VOYAGES ARE DELETED -->
+    <div id="emptyVoyageState" class="hidden flex-1 p-6 max-w-2xl w-full mx-auto flex flex-col items-center justify-center text-center">
+      <div class="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm w-full space-y-4">
+        <div class="w-14 h-14 rounded-2xl bg-tealbrand-50 text-[#0D7A6E] flex items-center justify-center mx-auto text-2xl border border-tealbrand-600/20">
+          <i class="fa-solid fa-ship"></i>
+        </div>
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Chưa có chuyến tàu nào trong hệ thống</h2>
+          <p class="text-xs text-slate-500 mt-1">Bạn đã xóa toàn bộ chuyến tàu trước đó. Hãy khởi tạo chuyến tàu mới để bắt đầu nhập liệu hoặc khôi phục dữ liệu mẫu.</p>
+        </div>
+        <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+          <button onclick="openNewVesselModal()" class="px-4 py-2.5 rounded-xl bg-[#0D7A6E] hover:bg-[#0B665C] text-white text-xs font-semibold flex items-center gap-2 transition">
+            <i class="fa-solid fa-plus"></i> Thêm chuyến tàu mới
+          </button>
+          <button onclick="restoreSampleVoyage()" class="px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-2 transition">
+            <i class="fa-solid fa-rotate-left"></i> Nạp lại tàu mẫu (MV. NEW HOPE)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DYNAMIC VIEWPORT CONTAINER -->
+    <main id="mainWorkspace" class="flex-1 p-4 sm:p-6 max-w-6xl w-full mx-auto space-y-5">
+
+      <!-- 1. TỔNG QUAN (OVERVIEW) -->
+      <section id="view-overview" class="module-view hidden space-y-5">
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 id="ovVesselTitle" class="text-lg font-bold text-slate-900">MV. NEW HOPE — VOY-24-10</h1>
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Đang khai thác</span>
+            </div>
+            <p id="ovVesselSubtitle" class="text-xs text-slate-500 mt-1"></p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="switchModule('checklist')" class="px-3.5 py-2 rounded-xl bg-[#0D7A6E] hover:bg-[#0B665C] text-white text-xs font-semibold transition">
+              Kiểm tra Checklist CP1–CP3
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+            <div class="text-xs font-medium text-slate-500">Khối lượng B/L</div>
+            <div id="ovBlQty" class="text-2xl font-extrabold text-slate-900 mt-1">12,500.00 <span class="text-xs font-semibold text-slate-400">MT</span></div>
+            <div id="ovStage1DocNote" class="text-[11px] text-emerald-600 font-semibold mt-1.5"></div>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+            <div class="text-xs font-medium text-slate-500">Sản lượng đã dỡ (Nhật ký ca)</div>
+            <div id="ovDischarged" class="text-2xl font-extrabold text-[#0D7A6E] mt-1">0.00 <span class="text-xs font-semibold text-slate-400">MT</span></div>
+            <div class="text-[11px] text-slate-500 mt-1.5">Cập nhật theo ca làm hàng thực tế</div>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+            <div class="text-xs font-medium text-slate-500">Tiến độ Checklist CP1–CP3</div>
+            <div id="ovCpStatus" class="text-2xl font-extrabold text-slate-900 mt-1">0 / 11 <span class="text-xs font-semibold text-slate-400">mục</span></div>
+            <div id="ovCp1Note" class="text-[11px] text-emerald-600 font-semibold mt-1.5"></div>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+            <div class="text-xs font-medium text-slate-500">Chứng từ hoàn công (GĐ3)</div>
+            <div id="ovMissingDocs" class="text-2xl font-extrabold text-rose-600 mt-1">4 <span class="text-xs font-semibold text-slate-400">còn thiếu</span></div>
+            <div class="text-[11px] text-slate-500 mt-1.5">ROROC, Final Tally, Draft Survey, Clearance</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+            <h2 class="text-sm font-bold text-slate-800 mb-3">Tóm tắt các điểm kiểm soát (CP1 – CP3)</h2>
+            <div id="ovCheckpointSummary" class="space-y-2.5"></div>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+            <h2 class="text-sm font-bold text-slate-800 mb-3">Sự kiện SOF gần nhất</h2>
+            <div id="ovRecentSof" class="space-y-2.5"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. QUẢN LÝ TÀU (MULTI-VOYAGE MANAGEMENT) -->
+      <section id="view-vessels" class="module-view hidden space-y-5">
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-base font-bold text-slate-900">Danh sách chuyến tàu đang quản lý</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Chọn chuyến tàu để làm việc, thêm chuyến tàu mới hoặc xóa chuyến tàu để nhập lại từ đầu</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <button onclick="openNewVesselModal()" class="px-3.5 py-2 rounded-xl bg-[#0D7A6E] hover:bg-[#0B665C] text-white text-xs font-semibold flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-plus"></i> Thêm chuyến tàu mới
+              </button>
+              <button onclick="openConfirmActionModal('reset')" class="px-3.5 py-2 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-rotate-left"></i> Đặt lại chuyến đang chọn
+              </button>
+              <button onclick="openConfirmActionModal('delete')" class="px-3.5 py-2 rounded-xl border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-trash-can"></i> Xóa chuyến tàu
+              </button>
+            </div>
+          </div>
+
+          <div id="voyageCardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5"></div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-4 mb-4 border-b border-slate-100">
+            <div>
+              <h2 class="text-base font-bold text-slate-900">Bước 1 · Tiếp nhận và kiểm tra thông tin tàu (Giai đoạn 1: Chuẩn bị)</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Kiểm tra thông tin cơ bản và đối chiếu tính thống nhất với NOA, B/L, Cargo Manifest và Stowage Plan</p>
+            </div>
+            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <i class="fa-solid fa-check mr-1"></i>Hồ sơ đang kích hoạt
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+            <div>
+              <label class="block font-semibold text-slate-600 mb-1">Tên tàu (Vessel Name)</label>
+              <input type="text" id="vName" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-semibold text-slate-800" />
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-600 mb-1">Số chuyến (Voyage No.)</label>
+              <input type="text" id="vVoy" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-semibold text-slate-800" />
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-600 mb-1">Quốc tịch / Cờ tàu (Flag)</label>
+              <input type="text" id="vFlag" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-800" />
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-600 mb-1">Thời gian dự kiến đến cảng (ETA)</label>
+              <input type="text" id="vEta" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-800" />
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-600 mb-1">Cảng xếp hàng (Port of Loading)</label>
+              <input type="text" id="vPol" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-800" />
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-600 mb-1">Cảng dỡ hàng (Port of Discharge)</label>
+              <input type="text" id="vPod" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-800" />
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-600 mb-1">Loại hàng (Cargo Type)</label>
+              <input type="text" id="vCargo" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-800" />
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-600 mb-1">Khối lượng dự kiến theo B/L (MT)</label>
+              <input type="number" step="0.01" id="vBlQty" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-semibold text-slate-800" />
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-600 mb-1">Người nhận hàng (Consignee)</label>
+              <input type="text" id="vConsignee" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-800" />
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block font-semibold text-slate-600 mb-1">Nguồn xác nhận thông tin ban đầu</label>
+              <input type="text" id="vSource" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-700" />
+            </div>
+            <div class="flex items-end">
+              <button onclick="saveActiveVesselParticulars()" class="w-full px-4 py-2 rounded-lg bg-[#0D7A6E] hover:bg-[#0B665C] text-white font-semibold transition">
+                Lưu thông tin chuyến tàu
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. CHECKLIST CP1–CP3 -->
+      <section id="view-checklist" class="module-view hidden space-y-5">
+        <div id="checklistCardsContainer" class="space-y-5"></div>
+      </section>
+
+      <!-- 4. NHẬT KÝ HIỆN TRƯỜNG (FIELD LOG) -->
+      <section id="view-fieldlog" class="module-view hidden space-y-5">
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-base font-bold text-slate-900">Nhật ký sản lượng dỡ hàng theo ca / ngày</h2>
+              <p class="text-xs text-slate-500">Ghi nhận sản lượng thực tế từng ca và trạng thái xác nhận bàn giao ca trực</p>
+            </div>
+            <button onclick="addShiftEntry()" class="px-3.5 py-2 rounded-lg bg-[#0D7A6E] hover:bg-[#0B665C] text-white text-xs font-semibold flex items-center gap-1.5 transition">
+              <i class="fa-solid fa-plus"></i> Thêm sản lượng ca
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
+            <input type="text" id="inShiftTime" placeholder="Ca / Ngày (VD: 02/12/2024 - Ca 1)" class="px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+            <input type="number" step="0.01" id="inShiftQty" placeholder="Sản lượng dỡ (MT)" class="px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+            <input type="text" id="inShiftHold" placeholder="Hầm hàng / Ghi chú (VD: Hầm 1 & 2)" class="px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+            <input type="text" id="inShiftStaff" value="Trương Nguyễn Bảo Ngọc" class="px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="border-b border-slate-200 text-slate-500 uppercase text-[11px]">
+                  <th class="py-3 px-3">Ngày / Ca làm việc</th>
+                  <th class="py-3 px-3 text-right">Sản lượng ca (MT)</th>
+                  <th class="py-3 px-3">Vị trí / Ghi chú</th>
+                  <th class="py-3 px-3">Nhân viên trực</th>
+                  <th class="py-3 px-3 text-right">Bàn giao ca</th>
+                </tr>
+              </thead>
+              <tbody id="fieldLogTableBody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. DAILY REPORT (STOPPAGES & DELAYS) -->
+      <section id="view-dailyreport" class="module-view hidden space-y-5">
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-base font-bold text-slate-900">Daily Report — Ghi nhận gián đoạn làm hàng</h2>
+              <p class="text-xs text-slate-500">Ghi nhận thời gian, nguyên nhân gián đoạn kèm hình ảnh minh chứng (đồng bộ sang Dòng thời gian SOF)</p>
+            </div>
+            <button onclick="addStoppageEntry()" class="px-3.5 py-2 rounded-lg bg-[#0D7A6E] hover:bg-[#0B665C] text-white text-xs font-semibold flex items-center gap-1.5 transition">
+              <i class="fa-solid fa-plus"></i> Ghi nhận gián đoạn
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
+            <input type="text" id="inStopTime" placeholder="Thời gian (VD: 02/12 14:00 - 15:30)" class="px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+            <input type="text" id="inStopReason" placeholder="Nguyên nhân gián đoạn" class="px-3 py-2 rounded-lg border border-slate-300 bg-white sm:col-span-2" />
+            <input type="file" id="inStopPhotoFile" accept="image/*" class="px-2 py-1.5 rounded-lg border border-slate-300 bg-white text-[11px]" />
+          </div>
+
+          <div id="dailyReportList" class="space-y-2.5"></div>
+        </div>
+      </section>
+
+      <!-- 6. ĐỐI CHIẾU SỐ LIỆU -->
+      <section id="view-reconcile" class="module-view hidden space-y-5">
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 class="text-base font-bold text-slate-900">Bảng tổng hợp số liệu chứng từ hàng hóa</h2>
+              <p class="text-xs text-slate-500">Lưu trữ số liệu từ các nguồn chứng từ để nhân viên phụ trách kiểm tra và đối chiếu khi kết thúc dỡ hàng</p>
+            </div>
+            <button onclick="saveReconcileNotes()" class="px-3.5 py-2 rounded-lg bg-[#0D7A6E] hover:bg-[#0B665C] text-white text-xs font-semibold transition">
+              Lưu số liệu đối chiếu
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/60">
+              <label class="block font-semibold text-slate-600 mb-1">Số liệu Vận đơn (Bill of Lading)</label>
+              <input type="text" id="recBlInput" readonly class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-100 font-bold text-slate-800" />
+            </div>
+            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/60">
+              <label class="block font-semibold text-slate-600 mb-1">Số liệu Final Tally Report / ROROC (MT)</label>
+              <input type="number" step="0.01" id="recTallyInput" oninput="updateReconcilePreview()" placeholder="Nhập số liệu thực dỡ (MT)..." class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white font-semibold text-slate-800" />
+            </div>
+            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/60">
+              <label class="block font-semibold text-slate-600 mb-1">Số liệu Draft Survey cuối (MT)</label>
+              <input type="number" step="0.01" id="recDraftInput" oninput="updateReconcilePreview()" placeholder="Nhập kết quả giám định (MT)..." class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white font-semibold text-slate-800" />
+            </div>
+          </div>
+
+          <div id="reconcileSummaryBox" class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 text-xs"></div>
+        </div>
+      </section>
+
+      <!-- 7. DÒNG THỜI GIAN SOF -->
+      <section id="view-softimeline" class="module-view hidden space-y-5">
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 class="text-base font-bold text-slate-900">Dòng thời gian Biên bản sự kiện (SOF Timeline)</h2>
+              <p class="text-xs text-slate-500">Tổng hợp các mốc thời gian từ Giai đoạn 1 và Nhật ký hiện trường từ một nguồn dữ liệu gốc</p>
+            </div>
+            <button onclick="openSofModal()" class="px-3.5 py-2 rounded-lg bg-[#0D7A6E] hover:bg-[#0B665C] text-white text-xs font-semibold transition">
+              Xem &amp; Xuất bản in SOF
+            </button>
+          </div>
+          <div id="sofTimelineList" class="space-y-3"></div>
+        </div>
+      </section>
+
+      <!-- 8. HÌNH ẢNH HIỆN TRƯỜNG -->
+      <section id="view-photos" class="module-view hidden space-y-5">
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Hình ảnh hiện trường theo chuyến tàu</h2>
+            <p class="text-xs text-slate-500">Lưu trữ tập trung hình ảnh làm hàng, tình trạng hàng hóa và các sự kiện gián đoạn</p>
+          </div>
+          <div id="photoGalleryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </div>
+      </section>
+
+      <!-- 9. BÁO CÁO & CHỨNG TỪ -->
+      <section id="view-docs" class="module-view hidden space-y-5">
+        <div id="docsFoldersContainer" class="space-y-5"></div>
+      </section>
+
+      <!-- 10. BÀN GIAO CA TRỰC -->
+      <section id="view-handover" class="module-view hidden space-y-5">
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Quản lý xác nhận bàn giao ca trực</h2>
+            <p class="text-xs text-slate-500">Cảnh báo nhắc việc nếu ca trực kết thúc nhưng chưa có xác nhận bàn giao của nhân viên phụ trách</p>
+          </div>
+          <div id="handoverListContainer" class="space-y-3"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MODAL: STATEMENT OF FACTS (SOF) PREVIEW -->
+  <div id="sofModal" class="fixed inset-0 bg-slate-900/60 z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-xl border border-slate-200 space-y-4 max-h-[88vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div>
+          <h3 class="font-bold text-slate-900 text-base">STATEMENT OF FACTS (SOF) — BIÊN BẢN SỰ KIỆN</h3>
+          <p class="text-xs text-slate-500">Xuất tự động từ dữ liệu gốc hệ thống SGCL Vessel Agency</p>
+        </div>
+        <div class="flex items-center gap-2 no-print">
+          <button onclick="window.print()" class="px-3 py-1.5 rounded-lg bg-[#0D7A6E] text-white text-xs font-semibold">In / Lưu PDF</button>
+          <button onclick="closeSofModal()" class="text-slate-400 hover:text-slate-600 px-2" aria-label="Đóng"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+      </div>
+      <div id="sofModalBody" class="text-xs space-y-3"></div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD NEW VOYAGE -->
+  <div id="newVesselModal" class="fixed inset-0 bg-slate-900/60 z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-xl border border-slate-200 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div>
+          <h3 class="font-bold text-slate-900 text-base">Khởi tạo chuyến tàu mới (Giai đoạn 1)</h3>
+          <p class="text-xs text-slate-500">Nhập thông tin ban đầu để tạo hồ sơ, bộ Checklist CP1–CP3 và cây thư mục chứng từ</p>
+        </div>
+        <button onclick="closeNewVesselModal()" class="text-slate-400 hover:text-slate-600 px-2" aria-label="Đóng"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Tên tàu (Vessel Name) *</label>
+          <input type="text" id="nvName" placeholder="VD: MV. SGCL 2" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-semibold" />
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Số chuyến (Voyage No.) *</label>
+          <input type="text" id="nvVoy" placeholder="VD: VOY-26-02" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-semibold" />
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Quốc tịch / Cờ tàu (Flag)</label>
+          <input type="text" id="nvFlag" placeholder="VD: Panama" class="w-full px-3 py-2 rounded-lg border border-slate-300" />
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Thời gian dự kiến đến cảng (ETA)</label>
+          <input type="text" id="nvEta" placeholder="VD: 25/11/2026 08:00 LT" class="w-full px-3 py-2 rounded-lg border border-slate-300" />
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Cảng xếp hàng (Port of Loading)</label>
+          <input type="text" id="nvPol" placeholder="VD: Quảng Ninh, Việt Nam" class="w-full px-3 py-2 rounded-lg border border-slate-300" />
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Cảng dỡ hàng (Port of Discharge)</label>
+          <input type="text" id="nvPod" placeholder="VD: Cảng Lotus, TP.HCM" class="w-full px-3 py-2 rounded-lg border border-slate-300" />
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Loại hàng (Cargo Type)</label>
+          <input type="text" id="nvCargo" placeholder="VD: Xi măng bao (Cement in bags)" class="w-full px-3 py-2 rounded-lg border border-slate-300" />
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Khối lượng dự kiến B/L (MT)</label>
+          <input type="number" step="0.01" id="nvBlQty" placeholder="VD: 9000" class="w-full px-3 py-2 rounded-lg border border-slate-300" />
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Người nhận hàng (Consignee)</label>
+          <input type="text" id="nvConsignee" placeholder="VD: PT. MMAS / Công ty ABC" class="w-full px-3 py-2 rounded-lg border border-slate-300" />
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Nguồn xác nhận ban đầu</label>
+          <input type="text" id="nvSource" value="Chủ tàu / Người thuê tàu / NOA" class="w-full px-3 py-2 rounded-lg border border-slate-300" />
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+        <button onclick="closeNewVesselModal()" class="px-4 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold">Hủy</button>
+        <button onclick="createNewVessel()" class="px-4 py-2 rounded-xl bg-[#0D7A6E] hover:bg-[#0B665C] text-white text-xs font-semibold">Tạo chuyến tàu &amp; Bắt đầu nhập liệu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIRM DELETE / RESET VOYAGE -->
+  <div id="confirmActionModal" class="fixed inset-0 bg-slate-900/60 z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 space-y-4">
+      <div class="flex items-start gap-3">
+        <div id="confirmIconBox" class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 text-lg border border-rose-200">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div>
+          <h3 id="confirmModalTitle" class="font-bold text-slate-900 text-base">Xác nhận xóa chuyến tàu?</h3>
+          <p id="confirmModalDesc" class="text-xs text-slate-600 mt-1 leading-relaxed"></p>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+        <button onclick="closeConfirmActionModal()" class="px-4 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold">Hủy bỏ</button>
+        <button id="confirmModalBtn" onclick="executeConfirmedAction()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold">Xác nhận xóa</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PHOTO LIGHTBOX -->
+  <div id="photoModal" class="fixed inset-0 bg-slate-900/70 z-50 hidden items-center justify-center p-4" onclick="closePhotoModal()">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-4 shadow-xl space-y-3" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+        <h3 id="photoModalTitle" class="font-bold text-slate-900 text-sm truncate"></h3>
+        <button onclick="closePhotoModal()" class="text-slate-400 hover:text-slate-700 px-2"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="photoModalBody" class="text-center"></div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'sgcl_multivoyage_v5';
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    function createDefaultDocFolders(isSampleLoaded = false) {
+      return [
+        {
+          id: 'folder1',
+          title: '01 · Chứng từ đầu vào (Giai đoạn 1)',
+          files: [
+            { id: 'd1', name: 'Arrival Notice', filename: isSampleLoaded ? 'AN_MV_New_Hope.pdf' : 'Arrival_Notice.pdf', uploaded: isSampleLoaded },
+            { id: 'd2', name: 'Crew List', filename: isSampleLoaded ? 'CrewList_24-10.pdf' : 'Crew_List.pdf', uploaded: isSampleLoaded },
+            { id: 'd3', name: 'Bill of Lading (B/L)', filename: isSampleLoaded ? 'BL_12500MT.pdf' : 'Bill_of_Lading.pdf', uploaded: isSampleLoaded },
+            { id: 'd4', name: 'Notice of Readiness (NOR)', filename: 'NOR_Signed.pdf', uploaded: isSampleLoaded },
+            { id: 'd5', name: 'Cargo Manifest', filename: isSampleLoaded ? 'Manifest_24-10.pdf' : 'Cargo_Manifest.pdf', uploaded: isSampleLoaded },
+            { id: 'd6', name: 'Stowage Plan', filename: isSampleLoaded ? 'StowagePlan_NewHope.pdf' : 'Stowage_Plan.pdf', uploaded: isSampleLoaded }
+          ]
+        },
+        {
+          id: 'folder3',
+          title: '03 · Chứng từ hoàn công (Giai đoạn 3)',
+          files: [
+            { id: 'c1', name: 'ROROC', filename: isSampleLoaded ? 'ROROC_NewHope_Signed.pdf' : 'ROROC_Signed.pdf', uploaded: false },
+            { id: 'c2', name: 'Final Tally Report', filename: isSampleLoaded ? 'Final_Tally_Report_24550789.pdf' : 'Final_Tally_Report.pdf', uploaded: false },
+            { id: 'c3', name: 'Draft Survey cuối', filename: 'Final_Draft_Survey.pdf', uploaded: false },
+            { id: 'c4', name: 'Port Clearance', filename: isSampleLoaded ? 'Port_Clearance_Certificate.pdf' : 'Port_Clearance.pdf', uploaded: false }
+          ]
+        }
+      ];
+    }
+
+    function createDefaultCheckpoints(isSampleLoaded = false) {
+      return [
+        {
+          id: 'cp1',
+          title: 'CP1 · Giai đoạn 1: Chuẩn bị',
+          items: [
+            { id: 'cp1_1', label: 'Đã xác nhận NOR', checked: isSampleLoaded },
+            { id: 'cp1_2', label: 'Thông tin tàu, hàng hóa, người nhận hàng đầy đủ', checked: isSampleLoaded },
+            { id: 'cp1_3', label: 'Mốc thời gian ban đầu có nguồn xác nhận', checked: isSampleLoaded },
+            { id: 'cp1_4', label: 'Đã tải đủ chứng từ đầu vào (NOA, Crew List, B/L, NOR, Manifest, Stowage Plan)', checked: isSampleLoaded },
+            { id: 'cp1_5', label: 'Đã đối chiếu tính thống nhất thông tin tàu & hàng hóa giữa các chứng từ', checked: isSampleLoaded }
+          ]
+        },
+        {
+          id: 'cp2',
+          title: 'CP2 · Giai đoạn 2: Giám sát dỡ hàng',
+          items: [
+            { id: 'cp2_1', label: 'Sản lượng từng ca/ngày đã nhập', checked: false },
+            { id: 'cp2_2', label: 'Gián đoạn có thời gian, nguyên nhân, hình ảnh', checked: false },
+            { id: 'cp2_3', label: 'Các ca đã xác nhận bàn giao', checked: false }
+          ]
+        },
+        {
+          id: 'cp3',
+          title: 'CP3 · Giai đoạn 3: Hoàn tất hồ sơ',
+          items: [
+            { id: 'cp3_1', label: 'Đã tải đủ chứng từ hoàn công', checked: false },
+            { id: 'cp3_2', label: 'Đã rà soát SOF với chứng từ', checked: false },
+            { id: 'cp3_3', label: 'Đã xuất SOF & báo cáo tổng hợp', checked: false }
+          ]
+        }
+      ];
+    }
+
+    function buildSampleNewHopeVoyage() {
+      return {
+        id: 'voy-newhope-2410',
+        vessel: {
+          name: 'MV. NEW HOPE',
+          voyage: 'VOY-24-10',
+          flag: 'Kiribati (Tarawa)',
+          eta: '01/12/2024 04:30 LT (Phao số 0 Vũng Tàu)',
+          pol: 'Madang & Alotau, Papua New Guinea',
+          pod: 'Cảng Khánh Hội (Cầu K08), TP. Hồ Chí Minh',
+          cargo: 'Gỗ tròn nhập khẩu (Round Logs)',
+          blQty: 12500.00,
+          consignee: 'Công ty TNHH Tín Khoa',
+          source: 'Chủ tàu, Thuyền trưởng, NOA, B/L, Manifest & Stowage Plan'
+        },
+        docFolders: createDefaultDocFolders(true),
+        checkpoints: createDefaultCheckpoints(true),
+        shifts: [
+          { id: 1, label: '01/12/2024 · Ca 1 (09:00 - 14:00)', qty: 1850.00, note: 'Dỡ hầm số 1 & số 2 tại cầu K08', officer: 'Trương Nguyễn Bảo Ngọc', confirmed: true },
+          { id: 2, label: '01/12/2024 · Ca 2 (14:00 - 22:00)', qty: 2430.50, note: 'Dỡ hàng gỗ tròn lên xe chủ hàng', officer: 'Trương Nguyễn Bảo Ngọc', confirmed: false }
+        ],
+        stoppages: [
+          { id: 1, time: '01/12/2024 · 16:15 – 17:45', reason: 'Mưa lớn tại khu vực cầu tàu K08, tạm dừng đóng nắp hầm tránh trơn trượt', photo: 'HienTruong_Mua_K08.jpg', photoData: '' }
+        ],
+        sofEvents: [
+          { time: '01/12/2024 04:30', event: 'Tàu đến trạm đón trả hoa tiêu Vũng Tàu (ETA)', source: 'Xác nhận từ Thuyền trưởng & Cảng vụ' },
+          { time: '01/12/2024 05:15', event: 'Hoa tiêu lên tàu dẫn luồng (POB)', source: 'Hoa tiêu Khu vực I' },
+          { time: '01/12/2024 08:30', event: 'Tàu cập cầu K08 Cảng Khánh Hội an toàn (All Fast)', source: 'Điều độ Cảng Khánh Hội' },
+          { time: '01/12/2024 08:45', event: 'Trao Thông báo sẵn sàng làm hàng (NOR Tendered)', source: 'NOR_Signed.pdf' },
+          { time: '01/12/2024 09:00', event: 'Bắt đầu dỡ hàng (Commenced Discharging)', source: 'Nhật ký hiện trường' }
+        ],
+        reconcileNotes: { tally: '', draft: '' }
+      };
+    }
+
+    function loadSavedState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && Array.isArray(parsed.voyages)) return parsed;
+        }
+      } catch {}
+      return {
+        activeModule: 'vessels',
+        activeVesselId: 'voy-newhope-2410',
+        pendingConfirmType: null,
+        voyages: [buildSampleNewHopeVoyage()]
+      };
+    }
+
+    const appState = loadSavedState();
+
+    let persistState = function() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          activeModule: appState.activeModule,
+          activeVesselId: appState.activeVesselId,
+          voyages: appState.voyages
+        }));
+      } catch {}
+    };
+
+    function getActiveVoyage() {
+      return appState.voyages.find(v => v.id === appState.activeVesselId) || null;
+    }
+
+    const moduleTitles = {
+      overview: 'Tổng quan',
+      vessels: 'Quản lý tàu',
+      checklist: 'Checklist CP1–CP3',
+      fieldlog: 'Nhật ký hiện trường',
+      dailyreport: 'Daily report',
+      reconcile: 'Đối chiếu số liệu',
+      softimeline: 'Dòng thời gian SOF',
+      photos: 'Hình ảnh hiện trường',
+      docs: 'Báo cáo & chứng từ',
+      handover: 'Bàn giao ca trực'
+    };
+
+    function showToast(message, type = 'success') {
+      const area = document.getElementById('toastArea');
+      const styleMap = {
+        success: 'bg-emerald-700 text-white border-emerald-600',
+        warn: 'bg-amber-600 text-white border-amber-500',
+        danger: 'bg-rose-700 text-white border-rose-600',
+        info: 'bg-[#0E2433] text-white border-slate-700'
+      };
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto px-4 py-2.5 rounded-xl shadow-lg border text-xs font-semibold flex items-center gap-2 transition-all duration-300 ${styleMap[type] || styleMap.info}`;
+      toast.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>${esc(message)}</span>`;
+      area.appendChild(toast);
+      setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 2800);
+    }
+
+    function toggleMobileSidebar() {
+      document.getElementById('appSidebar').classList.toggle('-translate-x-full');
+      document.getElementById('sidebarBackdrop').classList.toggle('hidden');
+    }
+
+    function switchModule(modId) {
+      appState.activeModule = modId;
+      document.querySelectorAll('.module-view').forEach(el => el.classList.add('hidden'));
+      const target = document.getElementById(`view-${modId}`);
+      if (target) target.classList.remove('hidden');
+
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.classList.remove('bg-[#0D7A6E]', 'text-white', 'font-semibold', 'shadow-sm');
+        btn.classList.add('text-slate-300', 'hover:bg-[#16354A]', 'hover:text-white');
+      });
+
+      const activeBtn = document.getElementById(`nav-${modId}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('text-slate-300', 'hover:bg-[#16354A]', 'hover:text-white');
+        activeBtn.classList.add('bg-[#0D7A6E]', 'text-white', 'font-semibold', 'shadow-sm');
+      }
+
+      document.getElementById('breadcrumbCurrent').textContent = moduleTitles[modId] || '';
+
+      const sb = document.getElementById('appSidebar');
+      const bd = document.getElementById('sidebarBackdrop');
+      if (!sb.classList.contains('-translate-x-full') && window.innerWidth < 1024) {
+        sb.classList.add('-translate-x-full');
+        bd.classList.add('hidden');
+      }
+
+      persistState();
+      renderAll();
+    }
+
+    function selectVessel(vesselId) {
+      appState.activeVesselId = vesselId;
+      persistState();
+      renderAll();
+      const current = getActiveVoyage();
+      if (current) showToast(`Đã chuyển sang chuyến tàu: ${current.vessel.name} (${current.vessel.voyage})`, 'info');
+    }
+
+    function openNewVesselModal() {
+      ['nvName','nvVoy','nvFlag','nvEta','nvPol','nvPod','nvCargo','nvBlQty','nvConsignee'].forEach(id => { document.getElementById(id).value = ''; });
+      document.getElementById('nvSource').value = 'Chủ tàu / Người thuê tàu / NOA';
+      const modal = document.getElementById('newVesselModal');
+      modal.classList.remove('hidden'); modal.classList.add('flex');
+    }
+    function closeNewVesselModal() {
+      const modal = document.getElementById('newVesselModal');
+      modal.classList.add('hidden'); modal.classList.remove('flex');
+    }
+
+    function createNewVessel() {
+      const name = document.getElementById('nvName').value.trim();
+      const voyage = document.getElementById('nvVoy').value.trim();
+      if (!name || !voyage) return showToast('Vui lòng nhập Tên tàu và Số chuyến!', 'warn');
+
+      const flag = document.getElementById('nvFlag').value.trim() || 'Chưa cập nhật';
+      const eta = document.getElementById('nvEta').value.trim() || 'Chưa cập nhật';
+      const pol = document.getElementById('nvPol').value.trim() || 'Chưa cập nhật';
+      const pod = document.getElementById('nvPod').value.trim() || 'Chưa cập nhật';
+      const cargo = document.getElementById('nvCargo').value.trim() || 'Hàng tổng hợp / Rời';
+      const blQty = parseFloat(document.getElementById('nvBlQty').value) || 0;
+      const consignee = document.getElementById('nvConsignee').value.trim() || 'Chưa cập nhật';
+      const source = document.getElementById('nvSource').value.trim() || 'Chủ tàu / Người thuê tàu';
+
+      const newId = 'voy-' + Date.now();
+      appState.voyages.push({
+        id: newId,
+        vessel: { name, voyage, flag, eta, pol, pod, cargo, blQty, consignee, source },
+        docFolders: createDefaultDocFolders(false),
+        checkpoints: createDefaultCheckpoints(false),
+        shifts: [],
+        stoppages: [],
+        sofEvents: [{ time: eta !== 'Chưa cập nhật' ? eta : 'Khởi tạo hồ sơ', event: `Tiếp nhận thông tin chuyến tàu ${name} (${voyage})`, source }],
+        reconcileNotes: { tally: '', draft: '' }
+      });
+      appState.activeVesselId = newId;
+      persistState();
+      closeNewVesselModal();
+      renderAll();
+      showToast(`Đã khởi tạo chuyến tàu mới: ${name} (${voyage})`, 'success');
+    }
+
+    function openConfirmActionModal(type) {
+      const current = getActiveVoyage();
+      if (!current) return;
+      appState.pendingConfirmType = type;
+
+      const titleEl = document.getElementById('confirmModalTitle');
+      const descEl = document.getElementById('confirmModalDesc');
+      const btnEl = document.getElementById('confirmModalBtn');
+      const iconBox = document.getElementById('confirmIconBox');
+
+      if (type === 'delete') {
+        titleEl.textContent = `Xóa chuyến tàu ${current.vessel.name} (${current.vessel.voyage})?`;
+        descEl.textContent = 'Toàn bộ dữ liệu nhật ký ca, chứng từ, dòng thời gian SOF và checklist của chuyến tàu này sẽ bị xóa khỏi danh sách.';
+        btnEl.textContent = 'Xác nhận xóa chuyến tàu';
+        btnEl.className = 'px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold';
+        iconBox.className = 'w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 text-lg border border-rose-200';
+      } else {
+        titleEl.textContent = `Đặt lại dữ liệu chuyến ${current.vessel.name}?`;
+        descEl.textContent = 'Giữ lại thông tin cơ bản của tàu nhưng xóa sạch nhật ký ca, gián đoạn, trạng thái chứng từ và đặt lại Checklist CP1–CP3 để nhập lại từ đầu.';
+        btnEl.textContent = 'Đặt lại để nhập lại';
+        btnEl.className = 'px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold';
+        iconBox.className = 'w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 text-lg border border-amber-200';
+      }
+      const modal = document.getElementById('confirmActionModal');
+      modal.classList.remove('hidden'); modal.classList.add('flex');
+    }
+
+    function closeConfirmActionModal() {
+      const modal = document.getElementById('confirmActionModal');
+      modal.classList.add('hidden'); modal.classList.remove('flex');
+      appState.pendingConfirmType = null;
+    }
+
+    function executeConfirmedAction() {
+      const current = getActiveVoyage();
+      if (!current) return closeConfirmActionModal();
+
+      if (appState.pendingConfirmType === 'delete') {
+        const deletedName = `${current.vessel.name} (${current.vessel.voyage})`;
+        appState.voyages = appState.voyages.filter(v => v.id !== current.id);
+        appState.activeVesselId = appState.voyages.length > 0 ? appState.voyages[0].id : null;
+        persistState(); closeConfirmActionModal(); renderAll();
+        showToast(`Đã xóa chuyến tàu: ${deletedName}`, 'danger');
+      } else if (appState.pendingConfirmType === 'reset') {
+        current.docFolders = createDefaultDocFolders(false);
+        current.checkpoints = createDefaultCheckpoints(false);
+        current.shifts = [];
+        current.stoppages = [];
+        current.sofEvents = [{ time: current.vessel.eta || 'Khởi tạo lại', event: `Đặt lại hồ sơ chuyến tàu ${current.vessel.name} (${current.vessel.voyage})`, source: current.vessel.source }];
+        current.reconcileNotes = { tally: '', draft: '' };
+        persistState(); closeConfirmActionModal(); renderAll();
+        showToast(`Đã đặt lại toàn bộ dữ liệu của ${current.vessel.name}!`, 'warn');
+      }
+    }
+
+    function restoreSampleVoyage() {
+      const sample = buildSampleNewHopeVoyage();
+      appState.voyages.push(sample);
+      appState.activeVesselId = sample.id;
+      persistState(); renderAll();
+      showToast('Đã nạp lại dữ liệu chuyến tàu mẫu MV. NEW HOPE!', 'success');
+    }
+
+    function saveActiveVesselParticulars() {
+      const current = getActiveVoyage();
+      if (!current) return;
+      current.vessel.name = document.getElementById('vName').value.trim() || current.vessel.name;
+      current.vessel.voyage = document.getElementById('vVoy').value.trim() || current.vessel.voyage;
+      current.vessel.flag = document.getElementById('vFlag').value.trim();
+      current.vessel.eta = document.getElementById('vEta').value.trim();
+      current.vessel.pol = document.getElementById('vPol').value.trim();
+      current.vessel.pod = document.getElementById('vPod').value.trim();
+      current.vessel.cargo = document.getElementById('vCargo').value.trim();
+      current.vessel.blQty = parseFloat(document.getElementById('vBlQty').value) || 0;
+      current.vessel.consignee = document.getElementById('vConsignee').value.trim();
+      current.vessel.source = document.getElementById('vSource').value.trim();
+      persistState(); renderAll();
+      showToast('Đã lưu và đồng bộ thông tin hồ sơ chuyến tàu!', 'success');
+    }
+
+    function renderVesselManagementAndSwitcher() {
+      const selectEl = document.getElementById('headerVesselSelect');
+      document.getElementById('badge-vessels').textContent = appState.voyages.length;
+
+      if (appState.voyages.length === 0) {
+        selectEl.innerHTML = `<option value="">-- Trống --</option>`;
+        document.getElementById('emptyVoyageState').classList.remove('hidden');
+        document.getElementById('mainWorkspace').classList.add('hidden');
+        return;
+      }
+
+      document.getElementById('emptyVoyageState').classList.add('hidden');
+      document.getElementById('mainWorkspace').classList.remove('hidden');
+
+      selectEl.innerHTML = appState.voyages.map(v => `
+        <option value="${esc(v.id)}" ${v.id === appState.activeVesselId ? 'selected' : ''}>
+          ${esc(v.vessel.name)} (${esc(v.vessel.voyage)})
+        </option>
+      `).join('');
+
+      const current = getActiveVoyage();
+      if (!current) return;
+
+      document.getElementById('voyageCardsGrid').innerHTML = appState.voyages.map(v => {
+        const isActive = v.id === appState.activeVesselId;
+        const doneCp = v.checkpoints.flatMap(c => c.items).filter(i => i.checked).length;
+        const totalCp = v.checkpoints.flatMap(c => c.items).length;
+        return `
+          <div onclick="selectVessel('${esc(v.id)}')" class="p-4 rounded-xl border ${isActive ? 'border-[#0D7A6E] bg-tealbrand-50/50 ring-1 ring-[#0D7A6E]/30' : 'border-slate-200 bg-slate-50/50 hover:bg-slate-50'} cursor-pointer transition space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-bold text-slate-900 text-xs">${esc(v.vessel.name)}</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${isActive ? 'bg-[#0D7A6E] text-white' : 'bg-slate-200 text-slate-700'}">
+                ${isActive ? 'Đang chọn' : esc(v.vessel.voyage)}
+              </span>
+            </div>
+            <div class="text-[11px] text-slate-600 truncate">Chuyến: <strong>${esc(v.vessel.voyage)}</strong> &bull; ${esc(v.vessel.pod)}</div>
+            <div class="text-[11px] text-slate-500 flex items-center justify-between pt-1 border-t border-slate-200/70">
+              <span>B/L: <strong>${Number(v.vessel.blQty || 0).toLocaleString('en-US')} MT</strong></span>
+              <span>Checklist: <strong>${doneCp}/${totalCp}</strong></span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('vName').value = current.vessel.name;
+      document.getElementById('vVoy').value = current.vessel.voyage;
+      document.getElementById('vFlag').value = current.vessel.flag;
+      document.getElementById('vEta').value = current.vessel.eta;
+      document.getElementById('vPol').value = current.vessel.pol;
+      document.getElementById('vPod').value = current.vessel.pod;
+      document.getElementById('vCargo').value = current.vessel.cargo;
+      document.getElementById('vBlQty').value = current.vessel.blQty;
+      document.getElementById('vConsignee').value = current.vessel.consignee;
+      document.getElementById('vSource').value = current.vessel.source;
+
+      document.getElementById('ovVesselTitle').textContent = `${current.vessel.name} — ${current.vessel.voyage}`;
+      document.getElementById('ovVesselSubtitle').innerHTML = `Cảng xếp: <strong>${esc(current.vessel.pol)}</strong> &bull; Cảng dỡ: <strong>${esc(current.vessel.pod)}</strong> &bull; Hàng hóa: <strong>${esc(current.vessel.cargo)} (${Number(current.vessel.blQty || 0).toLocaleString('en-US')} MT)</strong>`;
+      document.getElementById('ovBlQty').innerHTML = `${Number(current.vessel.blQty || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} <span class="text-xs font-semibold text-slate-400">MT</span>`;
+      document.getElementById('recBlInput').value = `${Number(current.vessel.blQty || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} MT`;
+      document.getElementById('recTallyInput').value = current.reconcileNotes?.tally || '';
+      document.getElementById('recDraftInput').value = current.reconcileNotes?.draft || '';
+      updateReconcilePreview();
+    }
+
+    function updateReconcilePreview() {
+      const current = getActiveVoyage();
+      if (!current) return;
+      const bl = Number(current.vessel.blQty || 0);
+      const tally = parseFloat(document.getElementById('recTallyInput').value);
+      const draft = parseFloat(document.getElementById('recDraftInput').value);
+      const box = document.getElementById('reconcileSummaryBox');
+      if (!box) return;
+
+      const calcRow = (label, val) => {
+        if (isNaN(val) || bl <= 0) return `<div><span class="text-slate-500">${label}:</span> <span class="text-slate-400">Chưa đủ số liệu đối chiếu</span></div>`;
+        const diff = val - bl;
+        const pct = (diff / bl) * 100;
+        const over = Math.abs(pct) > 0.5;
+        return `<div class="flex items-center justify-between py-1">
+          <span class="font-semibold text-slate-700">${label}</span>
+          <span class="font-bold ${over ? 'text-rose-600' : 'text-emerald-700'}">
+            ${diff >= 0 ? '+' : ''}${diff.toFixed(2)} MT (${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%) ${over ? '· Vượt ±0.5%' : '· Trong dung sai'}
+          </span>
+        </div>`;
+      };
+      box.innerHTML = `<div class="font-bold text-slate-800 mb-2">Kết quả đối chiếu tự động so với B/L (${bl.toLocaleString('en-US', { minimumFractionDigits: 2 })} MT)</div>`
+        + calcRow('Final Tally / ROROC vs B/L', tally)
+        + calcRow('Draft Survey cuối vs B/L', draft);
+    }
+
+    function saveReconcileNotes() {
+      const current = getActiveVoyage();
+      if (!current) return;
+      current.reconcileNotes = {
+        tally: document.getElementById('recTallyInput').value.trim(),
+        draft: document.getElementById('recDraftInput').value.trim()
+      };
+      persistState();
+      updateReconcilePreview();
+      showToast('Đã lưu số liệu đối chiếu cho chuyến tàu!', 'success');
+    }
+
+    function renderDocFolders() {
+      const current = getActiveVoyage();
+      if (!current) return;
+      const container = document.getElementById('docsFoldersContainer');
+      let totalMissing = 0;
+
+      container.innerHTML = current.docFolders.map((folder, fIdx) => {
+        const missingCount = folder.files.filter(f => !f.uploaded).length;
+        totalMissing += missingCount;
+        const subtitle = missingCount === 0 ? 'Đủ bộ chứng từ' : `Còn thiếu ${missingCount} chứng từ`;
+
+        return `
+          <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100">
+              <div class="flex items-center gap-2 text-sm font-bold text-slate-800">
+                <i class="fa-solid fa-folder text-amber-400 text-base"></i>
+                <span>${esc(folder.title)}</span>
+              </div>
+              <div class="text-xs text-slate-500 mt-0.5">${subtitle}</div>
+            </div>
+            <div class="divide-y divide-slate-100">
+              ${folder.files.map(file => `
+                <div class="px-5 py-3.5 flex items-center justify-between gap-3 hover:bg-slate-50/70 transition">
+                  <div class="flex items-center gap-2.5 min-w-0 text-xs">
+                    <i class="fa-regular fa-file-lines text-slate-400 text-sm shrink-0"></i>
+                    <div class="truncate">
+                      <span class="font-semibold text-slate-800">${esc(file.name)}</span>
+                      ${file.uploaded ? `<span class="text-slate-400 mx-1">&middot;</span><span class="text-slate-500">${esc(file.filename)}</span>` : ''}
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3 shrink-0">
+                    ${file.uploaded
+                      ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Đã tải lên</span>`
+                      : `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-600 border border-rose-200/80"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Còn thiếu</span>
+                         <button onclick="uploadDocument(${fIdx}, '${esc(file.id)}')" class="text-xs font-semibold text-[#0D7A6E] hover:underline">Tải lên</button>`}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>`;
+      }).join('');
+
+      document.getElementById('badge-missing-docs').textContent = totalMissing;
+      document.getElementById('ovMissingDocs').innerHTML = `${totalMissing} <span class="text-xs font-semibold text-slate-400">còn thiếu</span>`;
+      const s1Up = current.docFolders[0].files.filter(f => f.uploaded).length;
+      const s1Tot = current.docFolders[0].files.length;
+      document.getElementById('ovStage1DocNote').innerHTML = `<i class="fa-solid fa-check-circle mr-1"></i>Đã tải ${s1Up}/${s1Tot} chứng từ GĐ1`;
+    }
+
+    function uploadDocument(folderIdx, fileId) {
+      const current = getActiveVoyage();
+      if (!current) return;
+      const file = current.docFolders[folderIdx].files.find(f => f.id === fileId);
+      if (file) {
+        file.uploaded = true;
+        persistState();
+        renderDocFolders();
+        showToast(`Đã tải lên chứng từ: ${file.name} (${file.filename})`, 'success');
+      }
+    }
+
+    function renderCheckpoints() {
+      const current = getActiveVoyage();
+      if (!current) return;
+      document.getElementById('checklistCardsContainer').innerHTML = current.checkpoints.map((cp, cpIdx) => {
+        const allDone = cp.items.every(i => i.checked);
+        return `
+          <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-2">
+              <h2 class="text-sm font-bold text-slate-800">${esc(cp.title)}</h2>
+              ${allDone
+                ? `<span class="px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">Đã kiểm tra</span>`
+                : `<span class="px-3 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/80">Chưa hoàn tất</span>`}
+            </div>
+            <div class="divide-y divide-slate-100">
+              ${cp.items.map(item => `
+                <div onclick="toggleCpItem(${cpIdx}, '${esc(item.id)}')" class="px-5 py-3.5 flex items-center justify-between gap-3 cursor-pointer hover:bg-slate-50/70 transition select-none">
+                  <div class="flex items-center gap-3">
+                    <input type="checkbox" ${item.checked ? 'checked' : ''} onclick="event.stopPropagation(); toggleCpItem(${cpIdx}, '${esc(item.id)}')" class="w-4 h-4 rounded accent-[#0D7A6E] cursor-pointer" />
+                    <span class="text-xs font-medium text-slate-700">${esc(item.label)}</span>
+                  </div>
+                  ${item.checked
+                    ? `<span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80 shrink-0">Đã kiểm tra</span>`
+                    : `<span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/80 shrink-0">Chưa hoàn tất</span>`}
+                </div>
+              `).join('')}
+            </div>
+          </div>`;
+      }).join('');
+
+      const allItems = current.checkpoints.flatMap(c => c.items);
+      const doneItems = allItems.filter(i => i.checked).length;
+      document.getElementById('ovCpStatus').innerHTML = `${doneItems} / ${allItems.length} <span class="text-xs font-semibold text-slate-400">mục</span>`;
+      const cp1Done = current.checkpoints[0].items.filter(i => i.checked).length;
+      const cp1Total = current.checkpoints[0].items.length;
+      document.getElementById('ovCp1Note').textContent = `CP1 đã hoàn tất ${cp1Done}/${cp1Total} mục`;
+
+      document.getElementById('ovCheckpointSummary').innerHTML = current.checkpoints.map(cp => {
+        const done = cp.items.filter(i => i.checked).length;
+        return `<div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200/70 text-xs">
+          <span class="font-semibold text-slate-700">${esc(cp.title)}</span>
+          <span class="font-bold ${done === cp.items.length ? 'text-emerald-700' : 'text-amber-700'}">${done}/${cp.items.length} mục</span>
+        </div>`;
+      }).join('');
+    }
+
+    function toggleCpItem(cpIdx, itemId) {
+      const current = getActiveVoyage();
+      if (!current) return;
+      const item = current.checkpoints[cpIdx].items.find(i => i.id === itemId);
+      if (item) {
+        item.checked = !item.checked;
+        persistState();
+        renderCheckpoints();
+        renderVesselManagementAndSwitcher();
+      }
+    }
+
+    function renderShiftsAndHandover() {
+      const current = getActiveVoyage();
+      if (!current) return;
+      const tbody = document.getElementById('fieldLogTableBody');
+      if (current.shifts.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400">Chưa có dữ liệu sản lượng ca nào cho chuyến tàu này.</td></tr>`;
+      } else {
+        tbody.innerHTML = current.shifts.map(s => `
+          <tr class="hover:bg-slate-50">
+            <td class="py-3 px-3 font-semibold text-slate-800">${esc(s.label)}</td>
+            <td class="py-3 px-3 text-right font-bold text-[#0D7A6E]">${Number(s.qty).toLocaleString('en-US', { minimumFractionDigits: 2 })} MT</td>
+            <td class="py-3 px-3 text-slate-600">${esc(s.note)}</td>
+            <td class="py-3 px-3 text-slate-600">${esc(s.officer)}</td>
+            <td class="py-3 px-3 text-right">
+              ${s.confirmed
+                ? `<span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Đã bàn giao</span>`
+                : `<button onclick="confirmHandover(${s.id})" class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100">Xác nhận bàn giao</button>`}
+            </td>
+          </tr>`).join('');
+      }
+
+      const unconfirmed = current.shifts.filter(s => !s.confirmed).length;
+      document.getElementById('badge-shifts').textContent = current.shifts.length;
+      document.getElementById('badge-handover').textContent = unconfirmed;
+
+      const totalQty = current.shifts.reduce((acc, s) => acc + Number(s.qty || 0), 0);
+      document.getElementById('ovDischarged').innerHTML = `${totalQty.toLocaleString('en-US', { minimumFractionDigits: 2 })} <span class="text-xs font-semibold text-slate-400">MT</span>`;
+
+      const handoverContainer = document.getElementById('handoverListContainer');
+      if (current.shifts.length === 0) {
+        handoverContainer.innerHTML = `<div class="p-6 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl">Chưa có ca trực nào được ghi nhận.</div>`;
+      } else {
+        handoverContainer.innerHTML = current.shifts.map(s => `
+          <div class="p-3.5 rounded-xl border ${s.confirmed ? 'border-slate-200 bg-slate-50/50' : 'border-amber-200 bg-amber-50/40'} flex items-center justify-between gap-3 text-xs">
+            <div>
+              <div class="font-bold text-slate-800">${esc(s.label)} &mdash; Sản lượng: ${Number(s.qty).toLocaleString('en-US', { minimumFractionDigits: 2 })} MT</div>
+              <div class="text-slate-500 mt-0.5">Nhân viên trực ca: <strong>${esc(s.officer)}</strong></div>
+            </div>
+            ${s.confirmed
+              ? `<span class="px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Đã xác nhận bàn giao</span>`
+              : `<button onclick="confirmHandover(${s.id})" class="px-3 py-1.5 rounded-lg bg-[#0D7A6E] text-white font-semibold hover:bg-[#0B665C] transition">Xác nhận bàn giao ca</button>`}
+          </div>`).join('');
+      }
+    }
+
+    function addShiftEntry() {
+      const current = getActiveVoyage();
+      if (!current) return;
+      const label = document.getElementById('inShiftTime').value.trim();
+      const qty = parseFloat(document.getElementById('inShiftQty').value);
+      const note = document.getElementById('inShiftHold').value.trim() || 'Dỡ hàng theo kế hoạch';
+      const officer = document.getElementById('inShiftStaff').value.trim() || 'Trương Nguyễn Bảo Ngọc';
+      if (!label || isNaN(qty) || qty <= 0) return showToast('Vui lòng nhập đầy đủ ca và sản lượng!', 'warn');
+
+      current.shifts.push({ id: Date.now(), label, qty, note, officer, confirmed: false });
+      current.sofEvents.push({ time: label, event: `Ghi nhận sản lượng dỡ hàng: ${qty.toFixed(2)} MT`, source: `Nhật ký ca (${officer})` });
+      document.getElementById('inShiftTime').value = '';
+      document.getElementById('inShiftQty').value = '';
+      document.getElementById('inShiftHold').value = '';
+      persistState(); renderAll();
+      showToast('Đã ghi nhận sản lượng ca mới!', 'success');
+    }
+
+    function confirmHandover(id) {
+      const current = getActiveVoyage();
+      if (!current) return;
+      const s = current.shifts.find(item => item.id === id);
+      if (s) {
+        s.confirmed = true;
+        persistState();
+        renderShiftsAndHandover();
+        showToast(`Đã xác nhận bàn giao: ${s.label}`, 'success');
+      }
+    }
+
+    function compressPhoto(file) {
+      return new Promise(resolve => {
+        const rd = new FileReader();
+        rd.onload = () => {
+          const im = new Image();
+          im.onload = () => {
+            const k = Math.min(1, 900 / Math.max(im.width, im.height));
+            const c = document.createElement('canvas');
+            c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+            c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+            resolve(c.toDataURL('image/jpeg', 0.72));
+          };
+          im.onerror = () => resolve('');
+          im.src = rd.result;
+        };
+        rd.onerror = () => resolve('');
+        rd.readAsDataURL(file);
+      });
+    }
+
+    function renderStoppagesAndSof() {
+      const current = getActiveVoyage();
+      if (!current) return;
+      const list = document.getElementById('dailyReportList');
+      if (current.stoppages.length === 0) {
+        list.innerHTML = `<div class="p-6 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl">Chưa có sự kiện gián đoạn nào được ghi nhận cho chuyến tàu này.</div>`;
+      } else {
+        list.innerHTML = current.stoppages.map(st => `
+          <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/60 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div>
+              <div class="font-bold text-slate-800">${esc(st.time)}</div>
+              <div class="text-slate-600 mt-0.5">${esc(st.reason)}</div>
+            </div>
+            <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-tealbrand-50 text-tealbrand-600 border border-tealbrand-600/20">
+              <i class="fa-solid fa-camera mr-1"></i>${esc(st.photo)}
+            </span>
+          </div>`).join('');
+      }
+
+      document.getElementById('badge-stoppages').textContent = current.stoppages.length;
+      document.getElementById('badge-sof').textContent = current.sofEvents.length;
+
+      document.getElementById('sofTimelineList').innerHTML = current.sofEvents.map(ev => `
+        <div class="p-3.5 rounded-xl border border-slate-200 bg-white flex items-start justify-between gap-3 text-xs">
+          <div>
+            <div class="font-bold text-[#0D7A6E]">${esc(ev.time)}</div>
+            <div class="font-semibold text-slate-800 mt-0.5">${esc(ev.event)}</div>
+          </div>
+          <span class="text-[11px] text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full shrink-0">${esc(ev.source)}</span>
+        </div>`).join('');
+
+      document.getElementById('ovRecentSof').innerHTML = current.sofEvents.slice(-3).map(ev => `
+        <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/70 text-xs">
+          <div class="font-bold text-[#0D7A6E]">${esc(ev.time)}</div>
+          <div class="text-slate-700 font-medium">${esc(ev.event)}</div>
+        </div>`).join('');
+
+      const photoGrid = document.getElementById('photoGalleryGrid');
+      document.getElementById('badge-photos').textContent = current.stoppages.length;
+      if (current.stoppages.length === 0) {
+        photoGrid.innerHTML = `<div class="col-span-full p-6 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl">Chưa có hình ảnh hiện trường đính kèm.</div>`;
+      } else {
+        photoGrid.innerHTML = current.stoppages.map((p, idx) => `
+          <div onclick="openPhotoModal(${idx})" class="rounded-xl border border-slate-200 overflow-hidden bg-slate-50 cursor-pointer hover:shadow-sm transition">
+            <div class="h-36 bg-slate-200/70 flex flex-col items-center justify-center text-slate-500 overflow-hidden">
+              ${p.photoData
+                ? `<img src="${p.photoData}" alt="${esc(p.photo)}" class="w-full h-full object-cover" />`
+                : `<i class="fa-regular fa-image text-2xl mb-1"></i><span class="text-[11px] font-semibold px-2 truncate max-w-full">${esc(p.photo)}</span>`}
+            </div>
+            <div class="p-3 text-xs">
+              <div class="font-bold text-slate-800 truncate">${esc(p.reason)}</div>
+              <div class="text-[11px] text-slate-500 mt-0.5">${esc(p.time)}</div>
+            </div>
+          </div>`).join('');
+      }
+    }
+
+    function openPhotoModal(idx) {
+      const current = getActiveVoyage();
+      if (!current || !current.stoppages[idx]) return;
+      const p = current.stoppages[idx];
+      document.getElementById('photoModalTitle').textContent = `${p.time} — ${p.photo}`;
+      document.getElementById('photoModalBody').innerHTML = p.photoData
+        ? `<img src="${p.photoData}" class="max-h-[65vh] mx-auto rounded-lg" /><p class="text-xs text-slate-600 mt-2">${esc(p.reason)}</p>`
+        : `<div class="py-10 text-slate-400 text-xs"><i class="fa-regular fa-image text-4xl mb-2 block"></i>Ảnh minh họa mẫu (${esc(p.photo)})<p class="mt-1 text-slate-600">${esc(p.reason)}</p></div>`;
+      const m = document.getElementById('photoModal');
+      m.classList.remove('hidden'); m.classList.add('flex');
+    }
+    function closePhotoModal() {
+      const m = document.getElementById('photoModal');
+      m.classList.add('hidden'); m.classList.remove('flex');
+    }
+
+    async function addStoppageEntry() {
+      const current = getActiveVoyage();
+      if (!current) return;
+      const time = document.getElementById('inStopTime').value.trim();
+      const reason = document.getElementById('inStopReason').value.trim();
+      const fileEl = document.getElementById('inStopPhotoFile');
+      const file = fileEl.files[0];
+      if (!time || !reason) return showToast('Vui lòng nhập thời gian và nguyên nhân gián đoạn!', 'warn');
+
+      const photoName = file ? file.name : `HienTruong_${current.stoppages.length + 1}.jpg`;
+      const photoData = file ? await compressPhoto(file) : '';
+      current.stoppages.push({ id: Date.now(), time, reason, photo: photoName, photoData });
+      current.sofEvents.push({ time, event: `Gián đoạn làm hàng: ${reason}`, source: `Daily Report (${photoName})` });
+      document.getElementById('inStopTime').value = '';
+      document.getElementById('inStopReason').value = '';
+      fileEl.value = '';
+      persistState(); renderAll();
+      showToast('Đã ghi nhận sự kiện gián đoạn & cập nhật SOF!', 'success');
+    }
+
+    function openSofModal() {
+      const current = getActiveVoyage();
+      if (!current) return showToast('Vui lòng tạo chuyến tàu trước khi xuất SOF!', 'warn');
+      document.getElementById('sofModalBody').innerHTML = `
+        <div class="grid grid-cols-2 gap-2.5 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+          <div><span class="text-slate-500">Tên tàu:</span> <strong>${esc(current.vessel.name)} (${esc(current.vessel.voyage)})</strong></div>
+          <div><span class="text-slate-500">Cảng dỡ:</span> <strong>${esc(current.vessel.pod)}</strong></div>
+          <div><span class="text-slate-500">Hàng hóa:</span> <strong>${esc(current.vessel.cargo)}</strong></div>
+          <div><span class="text-slate-500">Phụ trách:</span> <strong>Trương Nguyễn Bảo Ngọc</strong></div>
+        </div>
+        <table class="w-full border border-slate-200 text-xs">
+          <thead>
+            <tr class="bg-slate-100">
+              <th class="border border-slate-200 p-2 text-left">Thời gian</th>
+              <th class="border border-slate-200 p-2 text-left">Sự kiện ghi nhận</th>
+              <th class="border border-slate-200 p-2 text-left">Nguồn xác nhận</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${current.sofEvents.map(e => `
+              <tr>
+                <td class="border border-slate-200 p-2 font-semibold">${esc(e.time)}</td>
+                <td class="border border-slate-200 p-2">${esc(e.event)}</td>
+                <td class="border border-slate-200 p-2 text-slate-500">${esc(e.source)}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+        <div class="grid grid-cols-2 gap-6 pt-6 text-center text-xs">
+          <div><div class="font-bold text-slate-800">MASTER / CHIEF OFFICER</div><div class="mt-10 pt-2 border-t border-dashed border-slate-400 text-slate-500">Ký &amp; đóng dấu tàu</div></div>
+          <div><div class="font-bold text-slate-800">AGENCY REPRESENTATIVE</div><div class="mt-10 pt-2 border-t border-dashed border-slate-400 font-bold text-slate-800">Trương Nguyễn Bảo Ngọc</div></div>
+        </div>`;
+      const modal = document.getElementById('sofModal');
+      modal.classList.remove('hidden'); modal.classList.add('flex');
+    }
+
+    function closeSofModal() {
+      const modal = document.getElementById('sofModal');
+      modal.classList.add('hidden'); modal.classList.remove('flex');
+    }
+
+    function exportCsvData() {
+      const current = getActiveVoyage();
+      if (!current) return showToast('Không có dữ liệu chuyến tàu để xuất CSV!', 'warn');
+      const rows = [['Thoi gian', 'Su kien', 'Nguon xac nhan'], ...current.sofEvents.map(e => [e.time, e.event, e.source])];
+      const csvContent = '\uFEFF' + rows.map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `SGCL_SOF_${current.vessel.voyage}.csv`; a.click();
+      URL.revokeObjectURL(url);
+      showToast('Đã xuất tệp dữ liệu CSV!', 'success');
+    }
+
+    function backupDataJson() {
+      const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), author: 'Trương Nguyễn Bảo Ngọc', activeVesselId: appState.activeVesselId, voyages: appState.voyages }, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'SGCL_MultiVoyage_Backup.json'; a.click();
+      URL.revokeObjectURL(url);
+      showToast('Đã sao lưu toàn bộ dữ liệu các chuyến tàu!', 'info');
+    }
+
+    function triggerRestoreJson() {
+      document.getElementById('restoreJsonInput').click();
+    }
+
+    function handleRestoreJsonFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const rd = new FileReader();
+      rd.onload = () => {
+        try {
+          const d = JSON.parse(rd.result);
+          if (!Array.isArray(d.voyages)) throw new Error('Invalid');
+          appState.voyages = d.voyages;
+          appState.activeVesselId = d.activeVesselId || (d.voyages[0] ? d.voyages[0].id : null);
+          persistState();
+          renderAll();
+          showToast('Đã khôi phục dữ liệu từ file sao lưu JSON!', 'success');
+        } catch {
+          showToast('File sao lưu JSON không hợp lệ!', 'danger');
+        }
+        event.target.value = '';
+      };
+      rd.readAsText(file);
+    }
+
+    function renderAll() {
+      renderVesselManagementAndSwitcher();
+      if (appState.voyages.length > 0) {
+        renderDocFolders();
+        renderCheckpoints();
+        renderShiftsAndHandover();
+        renderStoppagesAndSof();
+      }
+    }
+
+    // ---- LIVE SERVER SYNC (Node.js / Express) ----
+    const _origPersistState = persistState;
+    persistState = function() {
+      _origPersistState();
+      fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ activeVesselId: appState.activeVesselId, voyages: appState.voyages })
+      }).catch(() => {});
+    };
+
+    async function initWithServer() {
+      try {
+        const r = await fetch('/api/bootstrap');
+        if (r.ok) {
+          const d = await r.json();
+          if (d.initialized && Array.isArray(d.voyages)) {
+            appState.voyages = d.voyages;
+            appState.activeVesselId = d.activeVesselId || (d.voyages[0] ? d.voyages[0].id : null);
+          } else {
+            persistState();
+          }
+        }
+      } catch {}
+      switchModule(appState.activeModule || 'vessels');
+    }
+
+    window.addEventListener('DOMContentLoaded', initWithServer);
+  </script>
+</body>
+</html>
